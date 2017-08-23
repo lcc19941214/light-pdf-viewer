@@ -2,13 +2,14 @@ const path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const ROOT = path.resolve(__dirname);
-const PUBLIC_PATH = path.resolve(ROOT, 'public');
+const APP_PATH = path.resolve(ROOT, 'src');
 const DIST_PATH = path.resolve(ROOT, 'dist');
+const PUBLIC_PATH = path.resolve(ROOT, 'public');
 
 const plugins = [
   new HtmlWebpackPlugin({
     title: 'PDF Viewer',
-    template: path.join(PUBLIC_PATH, 'index.html'),
+    template: path.join(ROOT, 'index.html'),
     filename: path.resolve(DIST_PATH, 'index.html'),
     inject: 'body',
     minify: {
@@ -20,7 +21,7 @@ const plugins = [
 ];
 
 module.exports = {
-  entry: './src/index.js',
+  entry: path.resolve(APP_PATH, 'index.js'),
 
   output: {
     filename: 'pdf-viewer.js',
@@ -28,9 +29,6 @@ module.exports = {
   },
 
   devServer: {
-    headers: {
-      'Access-Control-Allow-Origin': '*'
-    },
     historyApiFallback: true,
     hot: true,
     inline: true,
@@ -40,8 +38,7 @@ module.exports = {
       color: true
     },
     port: 4000,
-    host: '127.0.0.1',
-    contentBase: '../public/index.html'
+    host: '127.0.0.1'
   },
 
   plugins,
@@ -53,9 +50,7 @@ module.exports = {
         exclude: /node_modules/,
         loader: 'babel-loader',
         query: {
-          cacheDirectory: true,
-          plugins: ['transform-runtime'],
-          presets: [['es2015', { modules: false }], 'react', 'stage-0']
+          cacheDirectory: true
         }
       },
       {
