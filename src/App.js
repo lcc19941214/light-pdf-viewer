@@ -8,18 +8,18 @@ class PDFViewer extends Component {
   static propTypes = {
     options: PropTypes.object,
     file: PropTypes.string.isRequired
-  }
+  };
 
   static defaultProps = {
-    options: {},
-    file: '/public/pdf/3.pdf'
-  }
+    options: {
+      tooltip: true
+    },
+    file: '/public/pdf/1.pdf'
+  };
 
   render() {
     const { options, file } = this.props;
-    return (
-      <Viewer file={file} />
-    );
+    return <Viewer file={file} options={options} />;
   }
 }
 

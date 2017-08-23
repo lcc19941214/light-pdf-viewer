@@ -21,6 +21,8 @@ const plugins = [
 ];
 
 module.exports = {
+  devtool: '#source-map',
+
   entry: path.resolve(APP_PATH, 'index.js'),
 
   output: {
