@@ -4104,6 +4104,14 @@ loader-runner@^2.3.0:
   version "2.3.0"
   resolved "http://npm.byted.org/loader-runner/-/loader-runner-2.3.0.tgz#f482aea82d543e07921700d5a46ef26fdac6b8a2"
 
+loader-utils@1.1.0, loader-utils@^1.0.2, loader-utils@^1.1.0:
+  version "1.1.0"
+  resolved "http://npm.byted.org/loader-utils/-/loader-utils-1.1.0.tgz#c98aef488bcceda2ffb5e2de646d6a754429f5cd"
+  dependencies:
+    big.js "^3.1.3"
+    emojis-list "^2.0.0"
+    json5 "^0.5.0"
+
 loader-utils@^0.2.16:
   version "0.2.17"
   resolved "http://npm.byted.org/loader-utils/-/loader-utils-0.2.17.tgz#f86e6374d43205a6e6c60e9196f17c0299bfb348"
@@ -4112,14 +4120,6 @@ loader-utils@^0.2.16:
     emojis-list "^2.0.0"
     json5 "^0.5.0"
     object-assign "^4.0.1"
-
-loader-utils@^1.0.2, loader-utils@^1.1.0:
-  version "1.1.0"
-  resolved "http://npm.byted.org/loader-utils/-/loader-utils-1.1.0.tgz#c98aef488bcceda2ffb5e2de646d6a754429f5cd"
-  dependencies:
-    big.js "^3.1.3"
-    emojis-list "^2.0.0"
-    json5 "^0.5.0"
 
 locate-path@^2.0.0:
   version "2.0.0"
@@ -6104,6 +6104,13 @@ supports-color@^4.0.0, supports-color@^4.2.1:
   resolved "http://npm.byted.org/supports-color/-/supports-color-4.2.1.tgz#65a4bb2631e90e02420dba5554c375a4754bb836"
   dependencies:
     has-flag "^2.0.0"
+
+svg-url-loader@^2.1.1:
+  version "2.1.1"
+  resolved "http://npm.byted.org/svg-url-loader/-/svg-url-loader-2.1.1.tgz#11ba66f4dd08d508c26d8561923b7ab2245469f0"
+  dependencies:
+    file-loader "0.11.2"
+    loader-utils "1.1.0"
 
 svgo@^0.7.0:
   version "0.7.2"

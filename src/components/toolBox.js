@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { MIN_SCALE, MAX_SCALE } from '../utils/utils';
+import { MIN_SCALE, MAX_SCALE, INITIAL_SCALE } from '../utils/utils';
 
 export default class ToolBox extends Component {
   static propTypes = {
@@ -39,7 +39,10 @@ export default class ToolBox extends Component {
             <div
               className="action-btn zoom-device-width"
               onClick={this.props.handleZoomToggle}>
-              ?
+              <div className={classnames('zoom-btn', {
+                'zoom-device__zoom-in': scale === INITIAL_SCALE,
+                'zoom-device__zoom-out': scale !== INITIAL_SCALE
+              })} />
             </div>
             <div
               className={classnames('action-btn', 'zoom-in', {

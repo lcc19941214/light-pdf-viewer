@@ -231,11 +231,14 @@
 
   .pdfViewer .page {
     direction: ltr;
-    margin: 10px 0;
     position: relative;
     overflow: visible;
     background-clip: content-box;
     background-color: white;
+  }
+
+  .pdfViewer .page + .page {
+    margin-top: 10px;
   }
 
   .pdfViewer.removePageBorders .page {

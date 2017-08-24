@@ -60,7 +60,6 @@ class Viewer extends Component {
   componentDidMount() {
     this.viewerElem = ReactDOM.findDOMNode(this);
     this.container = this.viewerElem.querySelector('.pdf-viewer');
-    this.container.style.zoom = 1 / RESOLUTION_SCALE;
 
     const { file = {} } = this.props;
     this.loadDocument(file, { textLayer: true });
@@ -99,24 +98,24 @@ class Viewer extends Component {
   };
 
   renderPDF = (pdfDocument, options) => {
+    const { scale = INITIAL_SCALE } = options;
+
     const container = this.container;
+    utils.removeChildren(container);
+
     const PAGE_COUNT = pdfDocument.numPages;
 
     const taskList = [];
 
     for (let page = 1; page <= PAGE_COUNT; page++) {
-      const pageContainer = document.createElement('div');
-      pageContainer.className = 'page-container';
-      container.appendChild(pageContainer);
-
       pdfDocument.getPage(page).then(pdfPage => {
         const scaledViewport = pdfPage.getViewport(INITIAL_SCALE);
-        const renderScale = PREVIEW_BOX_WIDTH / scaledViewport.width * RESOLUTION_SCALE;
+        const renderScale = PREVIEW_BOX_WIDTH / scaledViewport.width;
 
         const params = {
-          container: pageContainer,
+          container,
           id: page,
-          scale: parseFloat((renderScale * FIX_CSS_UNIT).toFixed(5)),
+          scale: parseFloat((renderScale * FIX_CSS_UNIT * scale).toFixed(5)),
           defaultViewport: scaledViewport
         };
 
@@ -128,7 +127,7 @@ class Viewer extends Component {
       });
     }
 
-    Promise.all(taskList).then(() => {});
+    return Promise.all(taskList);
   };
 
   handleZoomIn = () => {
@@ -147,7 +146,7 @@ class Viewer extends Component {
       scale > INITIAL_SCALE
         ? INITIAL_SCALE
         : parseFloat(
-            (INITIAL_SCALE / PREVIEW_BOX_WIDTH * utils.deviceWidth(40)).toFixed(1)
+            (INITIAL_SCALE / PREVIEW_BOX_WIDTH * utils.deviceWidth(40)).toFixed(5)
           );
     this.handleZoom(finalScale, scale);
   };
@@ -156,23 +155,16 @@ class Viewer extends Component {
   handleZoom = (scale, oldScale = INITIAL_SCALE) => {
     if (scale <= MAX_SCALE && scale >= MIN_SCALE) {
       this.setState({ scale });
-      const pages = this.getPages();
-      let initialContainerWidth;
-      let initialContainerHeight;
-      pages.forEach(page => {
-        const pageContainer = page.parentNode;
-        // pageContainer clientWidth changed after previous sibling element changed
-        page.style.transform = `scale(${scale})`;
 
-        if (!initialContainerWidth && !initialContainerHeight) {
-          initialContainerWidth = pageContainer.clientWidth / oldScale;
-          initialContainerHeight = pageContainer.clientHeight / oldScale;
-        }
-        pageContainer.style.width = `${initialContainerWidth * scale}px`;
-        pageContainer.style.height = `${initialContainerHeight * scale}px`;
+      const { options: preOptions } = this.props;
+      const { pdfDocument } = this.state;
+      const options = Object.assign({}, preOptions, { scale });
+      const oldWidth = this.container.clientWidth;
+
+      this.renderPDF(pdfDocument, options).then(taskList => {
+        const width = this.container.clientWidth;
+        this.resizeWrapper(width, oldWidth);
       });
-
-      this.resizeWrapper();
     }
   };
 
@@ -182,10 +174,10 @@ class Viewer extends Component {
     const len = pages.length;
     if (len > 1) {
       const H = window.innerHeight;
-      const halfH = H / RESOLUTION_SCALE;
+      const halfH = H / 2;
       for (let i = 0; i < len; i++) {
         const { top, bottom } = pages[i].getBoundingClientRect();
-        if (top / RESOLUTION_SCALE < halfH && bottom / RESOLUTION_SCALE > halfH) {
+        if (top < halfH && bottom > halfH) {
           this.setState({ currentPage: i + 1 });
           break;
         }
@@ -193,13 +185,17 @@ class Viewer extends Component {
     }
   };
 
-  resizeWrapper = () => {
-    const width = this.container.clientWidth / RESOLUTION_SCALE;
+  resizeWrapper = (width, oldWidth) => {
     const deviceWidth = utils.deviceWidth(40);
+    const align = Math.floor((width - deviceWidth) / 2);
+    const preScrollLeft = this.viewerElem.scrollLeft;
+    const preAlign = Math.floor((oldWidth - deviceWidth) / 2);
     if (width > deviceWidth) {
-      this.viewerElem.scrollLeft = (width - deviceWidth) / 2;
+      if (oldWidth < deviceWidth || preScrollLeft === preAlign) {
+        this.viewerElem.scrollLeft = align;
+      }
     }
-  }
+  };
 
   render() {
     const { options: { tooltip } } = this.props;

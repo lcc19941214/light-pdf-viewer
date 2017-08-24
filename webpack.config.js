@@ -89,6 +89,14 @@ module.exports = {
             loader: 'less-loader'
           }
         ]
+      },
+      {
+        test: /\.(jpeg|jpg|png|gif)$/,
+        use: 'url?limit=8192'
+      },
+      {
+        test: /\.svg$/,
+        use: 'svg-url-loader?limit=10000&mimetype=image/svg+xml'
       }
     ]
   }
