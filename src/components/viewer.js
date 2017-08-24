@@ -1,10 +1,12 @@
-import React, { PropTypes, Component } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import ToolBox from './toolBox';
 import utils, {
   noop,
   PREVIEW_BOX_WIDTH,
   INITIAL_SCALE,
+  RESOLUTION_SCALE,
   MIN_SCALE,
   MAX_SCALE,
   SCALE_STEP,
@@ -16,6 +18,8 @@ require('pdfjs-dist/build/pdf');
 const pdfjsLib = require('pdfjs-dist/web/pdf_viewer');
 const PDFJS = pdfjsLib.PDFJS;
 PDFJS.workerSrc = 'https://cdn.bootcss.com/pdf.js/1.9.448/pdf.worker.min.js';
+
+const { $, $$ } = utils;
 
 function composeParams(params = {}, options = {}) {
   const { textLayer, annotationLayer } = options;
@@ -42,7 +46,7 @@ class Viewer extends Component {
   constructor(...args) {
     super(...args);
 
-    this.handleZoom = utils.debounce(this.handleZoom.bind(this), 200);
+    this.handleZoom = utils.throttle(this.handleZoom, 400);
     this.handlePageScroll = utils.throttle(this.handlePageScroll, 300);
   }
 
@@ -55,16 +59,20 @@ class Viewer extends Component {
 
   componentDidMount() {
     this.viewerElem = ReactDOM.findDOMNode(this);
-    this.container = this.viewerElem.querySelector('.pdfViewer');
+    this.container = this.viewerElem.querySelector('.pdf-viewer');
+    this.container.style.zoom = 1 / RESOLUTION_SCALE;
+
     const { file = {} } = this.props;
     this.loadDocument(file, { textLayer: true });
 
-    window.addEventListener('scroll', this.handlePageScroll, false)
+    window.addEventListener('scroll', this.handlePageScroll, false);
   }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handlePageScroll, false);
   }
+
+  getPages = () => [...$$('.pdf-viewer-wrapper .page')];
 
   loadDocument = (file, options = {}) => {
     PDFJS.getDocument(file)
@@ -92,89 +100,104 @@ class Viewer extends Component {
 
   renderPDF = (pdfDocument, options) => {
     const container = this.container;
-    utils.removeChildren(container);
-
-    const { scale = INITIAL_SCALE, beforeRender = noop } = options;
     const PAGE_COUNT = pdfDocument.numPages;
 
+    const taskList = [];
+
     for (let page = 1; page <= PAGE_COUNT; page++) {
+      const pageContainer = document.createElement('div');
+      pageContainer.className = 'page-container';
+      container.appendChild(pageContainer);
+
       pdfDocument.getPage(page).then(pdfPage => {
         const scaledViewport = pdfPage.getViewport(INITIAL_SCALE);
-        const renderScale = PREVIEW_BOX_WIDTH / scaledViewport.width;
+        const renderScale = PREVIEW_BOX_WIDTH / scaledViewport.width * RESOLUTION_SCALE;
 
         const params = {
-          container,
+          container: pageContainer,
           id: page,
-          scale: renderScale * FIX_CSS_UNIT * scale,
+          scale: parseFloat((renderScale * FIX_CSS_UNIT).toFixed(5)),
           defaultViewport: scaledViewport
         };
 
         const pdfPageView = new PDFJS.PDFPageView(composeParams(params, options));
         pdfPageView.setPdfPage(pdfPage);
 
-        beforeRender(pdfPageView);
         const renderTask = pdfPageView.draw();
-        renderTask.then(() => {
-          if (page === 1) {
-
-          }
-        });
+        taskList.push(renderTask);
       });
     }
+
+    Promise.all(taskList).then(() => {});
   };
 
   handleZoomIn = () => {
     const { scale } = this.state;
-    this.handleZoom(parseFloat((scale + SCALE_STEP).toFixed(2)));
+    this.handleZoom(parseFloat((scale + SCALE_STEP).toFixed(1)), scale);
   };
 
   handleZoomOut = () => {
     const { scale } = this.state;
-    this.handleZoom(parseFloat((scale - SCALE_STEP).toFixed(2)));
+    this.handleZoom(parseFloat((scale - SCALE_STEP).toFixed(1)), scale);
   };
 
   handleZoomToggle = () => {
     const { scale } = this.state;
-    const finalScale = scale > 1 ? 1 : (1 / PREVIEW_BOX_WIDTH) * utils.deviceWidth();
-    this.handleZoom(finalScale);
-  }
+    const finalScale =
+      scale > INITIAL_SCALE
+        ? INITIAL_SCALE
+        : parseFloat(
+            (INITIAL_SCALE / PREVIEW_BOX_WIDTH * utils.deviceWidth(40)).toFixed(1)
+          );
+    this.handleZoom(finalScale, scale);
+  };
 
-  // debounced
-  handleZoom = scale => {
+  // throttle
+  handleZoom = (scale, oldScale = INITIAL_SCALE) => {
     if (scale <= MAX_SCALE && scale >= MIN_SCALE) {
-      const { options } = this.props;
-      const { pdfDocument } = this.state;
       this.setState({ scale });
-      this.renderPDF(pdfDocument, Object.assign({}, options, {
-        scale,
-        beforeRender: this.resizeWrapper
-      }));
+      const pages = this.getPages();
+      let initialContainerWidth;
+      let initialContainerHeight;
+      pages.forEach(page => {
+        const pageContainer = page.parentNode;
+        // pageContainer clientWidth changed after previous sibling element changed
+        page.style.transform = `scale(${scale})`;
+
+        if (!initialContainerWidth && !initialContainerHeight) {
+          initialContainerWidth = pageContainer.clientWidth / oldScale;
+          initialContainerHeight = pageContainer.clientHeight / oldScale;
+        }
+        pageContainer.style.width = `${initialContainerWidth * scale}px`;
+        pageContainer.style.height = `${initialContainerHeight * scale}px`;
+      });
+
+      this.resizeWrapper();
     }
   };
 
-  resizeWrapper = (pdfPageView) => {
-    const { viewport: { width } } = pdfPageView;
-    const deviceWidth = utils.deviceWidth();
-    if (width > deviceWidth) {
-      this.viewerElem.scrollLeft = (width - deviceWidth) / 2;
-    }
-  }
-
   // throttle
   handlePageScroll = () => {
-    let pages = this.container.querySelectorAll('.page');
-    pages = Array.prototype.slice.call(pages);
+    const pages = this.getPages();
     const len = pages.length;
     if (len > 1) {
       const H = window.innerHeight;
-      const halfH = H / 2;
+      const halfH = H / RESOLUTION_SCALE;
       for (let i = 0; i < len; i++) {
         const { top, bottom } = pages[i].getBoundingClientRect();
-        if (top < halfH && bottom > halfH) {
+        if (top / RESOLUTION_SCALE < halfH && bottom / RESOLUTION_SCALE > halfH) {
           this.setState({ currentPage: i + 1 });
           break;
         }
       }
+    }
+  };
+
+  resizeWrapper = () => {
+    const width = this.container.clientWidth / RESOLUTION_SCALE;
+    const deviceWidth = utils.deviceWidth(40);
+    if (width > deviceWidth) {
+      this.viewerElem.scrollLeft = (width - deviceWidth) / 2;
     }
   }
 

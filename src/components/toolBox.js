@@ -36,7 +36,11 @@ export default class ToolBox extends Component {
               onClick={this.props.handleZoomOut}>
               -
             </div>
-            <div className="action-btn zoom-device-width" onClick={this.props.handleZoomToggle}>?</div>
+            <div
+              className="action-btn zoom-device-width"
+              onClick={this.props.handleZoomToggle}>
+              ?
+            </div>
             <div
               className={classnames('action-btn', 'zoom-in', {
                 disabled: scale >= MAX_SCALE

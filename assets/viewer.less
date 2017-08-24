@@ -1,9 +1,16 @@
 .pdf-viewer-wrapper {
+  font-family: 'PingFang SC', 'Miscrosoft Yahei', sans-serif;
   position: relative;
   overflow: auto;
+  text-align: center;
   .pdf-viewer {
+    display: inline-block;
+    .page-container {
+    }
     .page {
-      margin: 0 auto;
+      display: inline-block;
+      transform-origin: top center;
+      transition: transform .35s ease;
     }
   }
   .tooltip-wrapper {

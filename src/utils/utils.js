@@ -2,6 +2,7 @@ const noop = () => {};
 
 const PREVIEW_BOX_WIDTH = 800;
 const INITIAL_SCALE = 1.0;
+const RESOLUTION_SCALE = 2.0;
 const MIN_SCALE = 1.0;
 const MAX_SCALE = 2.0;
 const SCALE_STEP = 0.1;
@@ -15,6 +16,7 @@ export {
   noop,
   PREVIEW_BOX_WIDTH,
   INITIAL_SCALE,
+  RESOLUTION_SCALE,
   MIN_SCALE,
   MAX_SCALE,
   SCALE_STEP,
@@ -22,7 +24,13 @@ export {
 };
 
 const utils = {
-  deviceWidth(margin = 30) {
+  $(selector) {
+    return document.querySelector(selector);
+  },
+  $$(selector) {
+    return document.querySelectorAll(selector);
+  },
+  deviceWidth(margin = 0) {
     return window.innerWidth - margin;
   },
   removeChildren(elem) {
