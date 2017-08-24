@@ -36,7 +36,8 @@ function composeParams(params = {}, options = {}) {
 class Viewer extends Component {
   static propTypes = {
     file: PropTypes.string.isRequired,
-    options: PropTypes.object
+    options: PropTypes.object,
+    onDownload: PropTypes.func
   };
 
   static defaultProps = {
@@ -82,6 +83,7 @@ class Viewer extends Component {
           pageCount: PAGE_COUNT,
           currentPage: 1
         });
+        window.pdfDocument = pdfDocument;
         return { pdfDocument, options };
       })
       .then(({ pdfDocument, options }) => this.renderPDF(pdfDocument, options))
@@ -109,6 +111,7 @@ class Viewer extends Component {
 
     for (let page = 1; page <= PAGE_COUNT; page++) {
       pdfDocument.getPage(page).then(pdfPage => {
+        window[`pdfPage${page}`] = pdfPage;
         const scaledViewport = pdfPage.getViewport(INITIAL_SCALE);
         const renderScale = PREVIEW_BOX_WIDTH / scaledViewport.width;
 
@@ -130,16 +133,15 @@ class Viewer extends Component {
     return Promise.all(taskList);
   };
 
+  // zoom in and and zoom out
   handleZoomIn = () => {
     const { scale } = this.state;
     this.handleZoom(parseFloat((scale + SCALE_STEP).toFixed(1)), scale);
   };
-
   handleZoomOut = () => {
     const { scale } = this.state;
     this.handleZoom(parseFloat((scale - SCALE_STEP).toFixed(1)), scale);
   };
-
   handleZoomToggle = () => {
     const { scale } = this.state;
     const finalScale =
@@ -150,8 +152,6 @@ class Viewer extends Component {
           );
     this.handleZoom(finalScale, scale);
   };
-
-  // throttle
   handleZoom = (scale, oldScale = INITIAL_SCALE) => {
     if (scale <= MAX_SCALE && scale >= MIN_SCALE) {
       this.setState({ scale });
@@ -165,6 +165,17 @@ class Viewer extends Component {
         const width = this.container.clientWidth;
         this.resizeWrapper(width, oldWidth);
       });
+    }
+  };
+  resizeWrapper = (width, oldWidth) => {
+    const deviceWidth = utils.deviceWidth(40);
+    const align = Math.floor((width - deviceWidth) / 2);
+    const preScrollLeft = this.viewerElem.scrollLeft;
+    const preAlign = Math.floor((oldWidth - deviceWidth) / 2);
+    if (width > deviceWidth) {
+      if (oldWidth < deviceWidth || preScrollLeft === preAlign) {
+        this.viewerElem.scrollLeft = align;
+      }
     }
   };
 
@@ -185,20 +196,16 @@ class Viewer extends Component {
     }
   };
 
-  resizeWrapper = (width, oldWidth) => {
-    const deviceWidth = utils.deviceWidth(40);
-    const align = Math.floor((width - deviceWidth) / 2);
-    const preScrollLeft = this.viewerElem.scrollLeft;
-    const preAlign = Math.floor((oldWidth - deviceWidth) / 2);
-    if (width > deviceWidth) {
-      if (oldWidth < deviceWidth || preScrollLeft === preAlign) {
-        this.viewerElem.scrollLeft = align;
-      }
+  handleDownload = (e) => {
+    const { onDownload, file } = this.props;
+    if (utils.isFunc(onDownload)) {
+      e.preventDefault();
+      onDownload(file);
     }
-  };
+  }
 
   render() {
-    const { options: { tooltip } } = this.props;
+    const { options: { tooltip }, file } = this.props;
     const { pageCount, currentPage, scale } = this.state;
     return (
       <div className="pdf-viewer-wrapper">
@@ -206,12 +213,14 @@ class Viewer extends Component {
         {tooltip &&
           pageCount > 0 &&
           <ToolBox
+            file={file}
             scale={scale}
             pageCount={pageCount}
             currentPage={currentPage}
             handleZoomIn={this.handleZoomIn}
             handleZoomOut={this.handleZoomOut}
             handleZoomToggle={this.handleZoomToggle}
+            handleDownload={this.handleDownload}
           />}
       </div>
     );

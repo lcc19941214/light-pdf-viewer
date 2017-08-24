@@ -1,0 +1,36 @@
+.PDFViewer {
+  .toolbar-wrapper {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: @tool-bar-height;
+    background-color: rgba(0, 0, 0, .75);
+    z-index: 100;
+  }
+  .toolbar {
+    overflow: hidden;
+    height: @tool-bar-height;
+    margin-right: 15px;
+    .action-group {
+      float: right;
+      padding: 2px;
+    }
+    .action-btn {
+      display: inline-block;
+      border-radius: 2px;
+      padding: 8px;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      text-align: center;
+      color: #fff;
+      cursor: pointer;
+      & + .action-btn {
+        margin-left: 10px;
+      }
+      &:hover {
+        background-color: rgba(255, 255, 255, .35);
+      }
+    }
+  }
+}

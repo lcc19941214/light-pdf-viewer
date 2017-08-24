@@ -1,0 +1,89 @@
+.PDFViewer {
+  .pdf-viewer-wrapper {
+    .tooltip-wrapper {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 20px;
+    }
+    .tooltip {
+      overflow: hidden;
+      border-radius: 3px;
+      background-color: rgba(0, 0, 0, .75);
+      height: @tooltip-height;
+      font-size: 13px;
+      color: #fff;
+      text-align: center;
+
+      .page-group, .action-group {
+        float: left;
+      }
+
+      .page-group {
+        line-height: @tooltip-height;
+        .label, .current, .count {
+          display: inline-block;
+        }
+        .label {
+          margin-left: 12px;
+        }
+        .current, .count {
+          width: @tooltip-height;
+        }
+      }
+      .action-group {
+        border-left: 1px solid rgba(255, 255, 255, .25);
+        padding: 2px;
+      }
+      .action-btn {
+        display: inline-block;
+        padding: (@tooltip-height - 4px - 24px)/2;
+        width: 24px;
+        height: 24px;
+        border-radius: 2px;
+        font-weight: 700;
+        line-height: 24px;
+        user-select: none;
+        vertical-align: middle;
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(255, 255, 255, .35);
+        }
+        &.disabled {
+          cursor: default;
+          &:hover {
+            background-color: transparent;
+          }
+          .action-btn__icon {
+            opacity: .5;
+          }
+        }
+      }
+      .action-btn__icon {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        &.zoom-in {
+          background-image: url('../public/images/plus.svg');
+          background-size: 22px;
+        }
+        &.zoom-out {
+          background-image: url('../public/images/minus.svg');
+          background-size: 22px;
+        }
+        &.zoom-device__zoom-in {
+          background-image: url('../public/images/zoomin.svg');
+        }
+        &.zoom-device__zoom-out {
+          background-image: url('../public/images/zoomout.svg');
+        }
+        &.download {
+          background-image: url('../public/images/download.svg');
+        }
+      }
+    }
+  }
+}

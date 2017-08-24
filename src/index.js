@@ -1,5 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import PDFViewer from './PDFViewer';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<PDFViewer />, document.getElementById('root'));

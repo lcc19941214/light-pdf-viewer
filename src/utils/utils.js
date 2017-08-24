@@ -38,6 +38,9 @@ const utils = {
       elem.removeChild(elem.lastChild);
     }
   },
+  isFunc(fn) {
+    return typeof fn === 'function';
+  },
   debounce(func, wait, immediate) {
     var timeout, args, context, timestamp, result;
 
