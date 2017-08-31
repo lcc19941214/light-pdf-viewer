@@ -9,11 +9,20 @@ const SCALE_STEP = 0.1;
 // use FIX_CSS_UNIT to fix this auto scale
 const FIX_CSS_UNIT = 1 / (96.0 / 72.0);
 
+const PDF_HOOK = [
+  'onBeforeLoad',
+  'onLoad',
+  'onBeforeRender',
+  'onRender',
+  'onError'
+];
+
 export {
   PREVIEW_BOX_WIDTH,
   INITIAL_SCALE,
   MIN_SCALE,
   MAX_SCALE,
   SCALE_STEP,
-  FIX_CSS_UNIT
+  FIX_CSS_UNIT,
+  PDF_HOOK
 };

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import Toolbox from './toolbox';
-import utils from '../utils/utils';
+import utils from '../lib/utils';
+import pdfHook from '../lib/pdfHook';
 import {
   PREVIEW_BOX_WIDTH,
   INITIAL_SCALE,
@@ -10,7 +11,7 @@ import {
   MAX_SCALE,
   SCALE_STEP,
   FIX_CSS_UNIT
-} from '../utils/constant';
+} from '../lib/constant';
 
 require('pdfjs-dist/build/pdf');
 
@@ -94,13 +95,18 @@ class Viewer extends Component {
   getPages = () => [...$$('.pdf-viewer-wrapper .page')];
 
   loadDocument = (URI, options = {}) => {
+    pdfHook('onBeforeLoad', this.props);
+
     PDFJS.getDocument(URI)
       .then(pdfDocument => {
+        pdfHook('onLoad', this.props);
+
         this.cache[URI] = pdfDocument;
         this.handleLoadDocument(pdfDocument, options);
       })
       .catch(err => {
         console.log(err);
+        pdfHook('onError', this.props);
       });
   };
   loadCache = (pdfDocument, options) => this.handleLoadDocument(pdfDocument, options)
@@ -113,12 +119,17 @@ class Viewer extends Component {
     });
 
     this.renderPDF(pdfDocument, options)
+      .then(() => {
+        pdfHook('onBeforeRender', this.props);
+      })
       .catch(err => {
         console.log(err);
+        pdfHook('onError', this.props);
       });
   }
 
   renderPDF = (pdfDocument, options) => {
+    pdfHook('onRender', this.props);
     utils.removeChildren(this.container);
 
     return this.makeRender(pdfDocument, options);

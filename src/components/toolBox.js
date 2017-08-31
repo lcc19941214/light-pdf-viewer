@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import utils from '../utils/utils';
+import utils from '../lib/utils';
 import {
   INITIAL_SCALE,
   MIN_SCALE,
   MAX_SCALE,
-} from '../utils/constant';
+} from '../lib/constant';
 
 export default class Toolbox extends Component {
   static propTypes = {
