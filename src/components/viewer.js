@@ -37,6 +37,7 @@ class Viewer extends Component {
   static propTypes = {
     URI: PropTypes.string.isRequired,
     options: PropTypes.object,
+    scrollTarget: PropTypes.instanceOf(HTMLElement),
     cache: PropTypes.object,
     onDownload: PropTypes.func
   };
@@ -44,11 +45,11 @@ class Viewer extends Component {
   constructor(...args) {
     super(...args);
 
+    this.cache = this.props.cache || {};
+    this.scrollTarget = utils.isElement(this.props.scrollTarget) ? this.props.scrollTarget : window;
     this.handleZoom = utils.throttle(this.handleZoom, 400);
     this.handlePageScroll = utils.throttle(this.handlePageScroll, 300);
   }
-
-  cache = this.props.cache || {}
 
   state = {
     pdfDocument: null,
@@ -61,15 +62,14 @@ class Viewer extends Component {
     this.viewerElem = ReactDOM.findDOMNode(this);
     this.container = this.viewerElem.querySelector('.pdf-viewer');
 
-    const { URI = {}, options } = this.props;
+    this.scrollTarget.addEventListener('scroll', this.handlePageScroll, false);
 
+    const { URI = {}, options } = this.props;
     if (this.cache[URI]) {
       this.loadCache(this.cache[URI], options);
     } else {
       this.loadDocument(URI, options);
     }
-
-    window.addEventListener('scroll', this.handlePageScroll, false);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -84,7 +84,7 @@ class Viewer extends Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener('scroll', this.handlePageScroll, false);
+    this.scrollTarget.removeEventListener('scroll', this.handlePageScroll, false);
 
     if (!this.props.cache) {
       this.cache = null;

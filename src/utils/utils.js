@@ -2,91 +2,96 @@ const utils = {
   $(selector) {
     return document.querySelector(selector);
   },
+
   $$(selector) {
     return document.querySelectorAll(selector);
   },
+
   deviceWidth(margin = 0) {
     return window.innerWidth - margin;
   },
+
   removeChildren(elem) {
     while (elem.hasChildNodes()) {
       elem.removeChild(elem.lastChild);
     }
   },
-  isFunc(fn) {
-    return typeof fn === 'function';
+
+  isString: str => typeof str === 'string',
+
+  isNumber: num => typeof num === 'number',
+
+  isArray: arr => {
+    if (Array.isArray) {
+      return Array.isArray(arr);
+    } else {
+      return arr instanceof Array;
+    }
   },
-  debounce(func, wait, immediate) {
-    var timeout, args, context, timestamp, result;
 
-    var later = function() {
-      var last = Date.now() - timestamp;
+  isFunc: fn => typeof fn === 'function',
 
-      if (last < wait && last >= 0) {
-        timeout = setTimeout(later, wait - last);
-      } else {
-        timeout = null;
-        if (!immediate) {
-          result = func.apply(context, args);
-          if (!timeout) context = args = null;
-        }
+  isNull: val => val === null,
+
+  isUndef: val => val === undefined,
+
+  isObject: obj => !utils.isNull(obj) && typeof obj === 'object',
+
+  isNode: node => {
+    return utils.isObject(Node)
+      ? node instanceof Node
+      : !!(node && utils.isObject(node)
+        && utils.isNumber(node.nodeType)
+        && utils.isString(node.nodeName))
+  },
+
+  isElement: elem => {
+    return utils.isObject(HTMLElement)
+      ? elem instanceof HTMLElement
+      : !!(elem && utils.isObject(elem)
+        && elem.nodeType === 1
+        && utils.isString(elem.nodeName))
+  },
+
+  debounce(fn, wait) {
+    var timer, context, args;
+
+    var debounced = function () {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
       }
-    };
 
-    return function() {
       context = this;
       args = arguments;
 
-      timestamp = Date.now();
+      timer = setTimeout(function () {
+        fn.apply(context, arguments);
+      }, wait);
+    }
 
-      var callNow = immediate && !timeout;
-
-      if (!timeout) timeout = setTimeout(later, wait);
-      if (callNow) {
-        result = func.apply(context, args);
-        context = args = null;
-      }
-
-      return result;
-    };
+    return debounced;
   },
-  throttle: function(func, wait, options) {
-    var timeout, context, args, result;
-    var previous = 0;
-    if (!options) options = {};
 
-    var later = function() {
-      previous = options.leading === false ? 0 : Date.now();
-      timeout = null;
-      result = func.apply(context, args);
-      if (!timeout) context = args = null;
-    };
+  throttle(fn, wait) {
+    var timer, context, args;
 
-    var throttled = function() {
-      var now = Date.now();
-      if (!previous && options.leading === false) previous = now;
-      var remaining = wait - (now - previous);
-      context = this;
-      args = arguments;
-      if (remaining <= 0 || remaining > wait) {
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = null;
-        }
-        previous = now;
-        result = func.apply(context, args);
-        if (!timeout) context = args = null;
-      } else if (!timeout && options.trailing !== false) {
-        timeout = setTimeout(later, remaining);
+    var throttled = function () {
+      if (!timer) {
+        context = this;
+        args = arguments;
+
+        timer = setTimeout(function () {
+          fn.apply(context, arguments);
+          timer = null;
+        }, wait);
       }
-      return result;
-    };
+    }
 
-    throttled.cancel = function() {
-      clearTimeout(timeout);
-      previous = 0;
-      timeout = context = args = null;
-    };
+    throttled.cancel = function () {
+      clearTimeout(timer);
+      timer = context = args = null;
+    }
 
     return throttled;
   }

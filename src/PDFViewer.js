@@ -7,8 +7,7 @@ import '../assets/index.less';
 class PDFViewer extends Component {
   static propTypes = {
     options: PropTypes.object,
-    URI: PropTypes.string.isRequired,
-    onDownload: PropTypes.func
+    URI: PropTypes.string.isRequired
   };
 
   static defaultProps = {
