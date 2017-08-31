@@ -1,6 +1,8 @@
 {
-  "presets": ["es2015", "stage-2", "stage-1", "stage-0", "react"],
+  "presets": ["es2015", "react"],
   "plugins": [
-    "transform-runtime"
+    "es6-promise",
+    "transform-class-properties",
+    "transform-object-assign"
   ]
 }

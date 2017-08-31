@@ -13,11 +13,11 @@ import {
   FIX_CSS_UNIT
 } from '../lib/constant';
 
-require('pdfjs-dist/build/pdf');
+import PDFVIEWER from 'pdfjs-dist/web/pdf_viewer';
+import PDFJS from 'pdfjs-dist/build/pdf';
 
-const pdfjsLib = require('pdfjs-dist/web/pdf_viewer');
+Object.assign(PDFJS, PDFVIEWER);
 
-const PDFJS = pdfjsLib.PDFJS;
 PDFJS.workerSrc = 'https://cdn.bootcss.com/pdf.js/1.9.448/pdf.worker.min.js';
 
 const { $, $$ } = utils;

@@ -3,7 +3,7 @@ import { PDF_HOOK } from './constant';
 
 
 export default function pdfHook(eventName, props) {
-  if (PDF_HOOK.includes(eventName)) {
+  if (PDF_HOOK.indexOf(eventName) !== -1) {
     if (utils.isFunc(props[eventName])) {
       props[eventName]();
     } else if (props[eventName]) {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Viewer from './components/viewer';
-import ToolBar from './components/toolBar';
+import Toolbar from './components/toolbar';
 import './style/index.less';
 
 class PDFViewer extends Component {
@@ -36,7 +36,7 @@ class PDFViewer extends Component {
     const { toolbar } = options;
     return URI ? (
       <div className="PDFViewer">
-        {toolbar && <ToolBar URI={URI} options={options} />}
+        {toolbar && <Toolbar URI={URI} options={options} />}
         <Viewer {...this.props} />
       </div>
     ) : null

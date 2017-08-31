@@ -90,7 +90,7 @@ export default class Toolbox extends Component {
     } else if (utils.isObject(toolbox)) {
       const customToolNames = Object.keys(toolbox);
       this.toolboxNames.forEach(tool => {
-        if (customToolNames.includes(tool) && toolbox[tool]) {
+        if (customToolNames.indexOf(tool) !== -1 && toolbox[tool]) {
           content.push(toolboxItems[tool]);
         }
       });

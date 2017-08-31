@@ -1,41 +1,52 @@
 {
-  "name": "pdf-viewer",
+  "name": "light-pdf-viewer",
   "version": "0.1.0",
-  "private": true,
+  "author": "conan <lcc19941214@gmail.com> (https://github.com/lcc19941214/)",
+  "main": "dist/js/light-pdf-viewer.js",
   "scripts": {
-    "start": "webpack-dev-server --progress --hot",
-    "build": "webpack --config ./webpack.config.js"
+    "dev": "NODE_ENV=development webpack-dev-server --progress --hot",
+    "example": "webpack --config ./webpack.config.example.js",
+    "prebuild": "rimraf ./dist",
+    "build": "NODE_ENV=production node ./bin/compile",
+    "compile": "./node_modules/babel-cli/bin/babel.js ./src -d lib",
+    "prepublish": "in-publish && rimraf ./lib && yarn run comfile && yarn run build"
   },
   "dependencies": {
     "classnames": "^2.2.5",
     "pdfjs-dist": "^1.9.456",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "react-scripts": "1.0.11"
+    "react-dom": "^15.6.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.0.0",
     "babel-loader": "^7.1.2",
+    "babel-plugin-es6-promise": "^1.1.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-assign": "^6.22.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "babel-preset-stage-1": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "babel-preset-stage-3": "^6.24.1",
     "css-loader": "^0.28.5",
     "cssnano": "^3.10.0",
+    "es6-promise": "^4.1.1",
     "eslint": "^4.0.0",
     "eslint-plugin-babel": "^4.1.2",
+    "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^0.11.2",
+    "fs-extra": "^4.0.1",
+    "html-webpack-plugin": "^2.30.1",
+    "in-publish": "^2.0.0",
     "less": "^2.7.2",
     "less-loader": "^4.0.5",
     "postcss-loader": "^2.0.6",
+    "rimraf": "^2.6.1",
     "style-loader": "^0.18.2",
     "svg-url-loader": "^2.1.1",
     "url-loader": "^0.5.9",
-    "webpack": "^3.5.5"
+    "webpack": "^3.5.5",
+    "webpack-dev-server": "^2.7.1"
   }
 }
