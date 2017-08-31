@@ -136,20 +136,29 @@ class Viewer extends Component {
   // zoom in and and zoom out
   handleZoomIn = () => {
     const { scale } = this.state;
-    this.handleZoom(parseFloat((scale + SCALE_STEP).toFixed(1)), scale);
+    if (scale < MAX_SCALE) {
+      let finalScale = parseFloat((scale + SCALE_STEP).toFixed(1));
+      if (finalScale > MAX_SCALE) finalScale = MAX_SCALE;
+      this.handleZoom(finalScale, scale);
+    }
   };
   handleZoomOut = () => {
     const { scale } = this.state;
-    this.handleZoom(parseFloat((scale - SCALE_STEP).toFixed(1)), scale);
+    if (scale > MIN_SCALE) {
+      let finalScale = parseFloat((scale - SCALE_STEP).toFixed(1));
+      if (finalScale < MIN_SCALE) finalScale = MIN_SCALE;
+      this.handleZoom(finalScale, scale);
+    }
   };
   handleZoomToggle = () => {
     const { scale } = this.state;
-    const finalScale =
+    let finalScale =
       scale > INITIAL_SCALE
         ? INITIAL_SCALE
         : parseFloat(
-            (INITIAL_SCALE / PREVIEW_BOX_WIDTH * utils.deviceWidth(40)).toFixed(5)
+            (INITIAL_SCALE / PREVIEW_BOX_WIDTH * pdfUtils.deviceWidth(40)).toFixed(5)
           );
+    if (finalScale > MAX_SCALE) finalScale = MAX_SCALE;
     this.handleZoom(finalScale, scale);
   };
   handleZoom = (scale, oldScale = INITIAL_SCALE) => {
@@ -160,21 +169,23 @@ class Viewer extends Component {
       const { pdfDocument } = this.state;
       const options = Object.assign({}, preOptions, { scale });
       const oldWidth = this.container.clientWidth;
+      const oldScrollLeft = this.viewerElem.scrollLeft;
 
       this.renderPDF(pdfDocument, options).then(taskList => {
         const width = this.container.clientWidth;
-        this.resizeWrapper(width, oldWidth);
+        this.resizeWrapper(width, oldWidth, oldScrollLeft);
       });
     }
   };
-  resizeWrapper = (width, oldWidth) => {
-    const deviceWidth = utils.deviceWidth(40);
+  resizeWrapper = (width, oldWidth, oldScrollLeft) => {
+    const deviceWidth = pdfUtils.deviceWidth(40);
     const align = Math.floor((width - deviceWidth) / 2);
-    const preScrollLeft = this.viewerElem.scrollLeft;
     const preAlign = Math.floor((oldWidth - deviceWidth) / 2);
     if (width > deviceWidth) {
-      if (oldWidth < deviceWidth || preScrollLeft === preAlign) {
+      if (oldWidth < deviceWidth || oldScrollLeft === preAlign) {
         this.viewerElem.scrollLeft = align;
+      } else if (oldScrollLeft !== preAlign) {
+        this.viewerElem.scrollLeft = oldScrollLeft;
       }
     }
   };
