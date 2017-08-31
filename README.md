@@ -6,7 +6,10 @@ A light component to preview pdf files, offer toolbox with pager, zoomer and dow
 
 ## Install
 
+`light-pdf-viewer` is dependant on `pdfjs-dist` so make sure you have installed it in advance.
+
 ```Bash
+npm install --save pdfjs-dist@1.9.456
 npm install --save react-light-pdf-viwer
 ```
 
