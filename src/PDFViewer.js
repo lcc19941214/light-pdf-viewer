@@ -7,24 +7,25 @@ import '../assets/index.less';
 class PDFViewer extends Component {
   static propTypes = {
     options: PropTypes.object,
-    file: PropTypes.string.isRequired,
+    URI: PropTypes.string.isRequired,
     onDownload: PropTypes.func
   };
 
   static defaultProps = {
     options: {
       tooltip: true,
-      toolbar: false
+      toolbar: false,
+      textLayer: true
     },
-    file: '/public/pdf/1.pdf'
+    URI: '/public/pdf/4.pdf'
   };
 
   render() {
-    const { options, file } = this.props;
+    const { options, URI } = this.props;
     const { toolbar } = options;
     return (
       <div className="PDFViewer">
-        {toolbar && <ToolBar file={file} options={options} />}
+        {toolbar && <ToolBar URI={URI} options={options} />}
         <Viewer {...this.props} />
       </div>
     );

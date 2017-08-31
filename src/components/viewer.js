@@ -2,20 +2,20 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import ToolBox from './toolBox';
-import utils, {
-  noop,
+import utils from '../utils/utils';
+import {
   PREVIEW_BOX_WIDTH,
   INITIAL_SCALE,
-  RESOLUTION_SCALE,
   MIN_SCALE,
   MAX_SCALE,
   SCALE_STEP,
   FIX_CSS_UNIT
-} from '../utils/utils';
+} from '../utils/constant';
 
 require('pdfjs-dist/build/pdf');
 
 const pdfjsLib = require('pdfjs-dist/web/pdf_viewer');
+
 const PDFJS = pdfjsLib.PDFJS;
 PDFJS.workerSrc = 'https://cdn.bootcss.com/pdf.js/1.9.448/pdf.worker.min.js';
 
@@ -35,13 +35,10 @@ function composeParams(params = {}, options = {}) {
 
 class Viewer extends Component {
   static propTypes = {
-    file: PropTypes.string.isRequired,
+    URI: PropTypes.string.isRequired,
     options: PropTypes.object,
+    cache: PropTypes.object,
     onDownload: PropTypes.func
-  };
-
-  static defaultProps = {
-    options: {}
   };
 
   constructor(...args) {
@@ -50,6 +47,8 @@ class Viewer extends Component {
     this.handleZoom = utils.throttle(this.handleZoom, 400);
     this.handlePageScroll = utils.throttle(this.handlePageScroll, 300);
   }
+
+  cache = this.props.cache || {}
 
   state = {
     pdfDocument: null,
@@ -62,56 +61,75 @@ class Viewer extends Component {
     this.viewerElem = ReactDOM.findDOMNode(this);
     this.container = this.viewerElem.querySelector('.pdf-viewer');
 
-    const { file = {} } = this.props;
-    this.loadDocument(file, { textLayer: true });
+    const { URI = {}, options } = this.props;
+
+    if (this.cache[URI]) {
+      this.loadCache(this.cache[URI], options);
+    } else {
+      this.loadDocument(URI, options);
+    }
 
     window.addEventListener('scroll', this.handlePageScroll, false);
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { URI = {}, options } = nextProps;
+    if (this.props.URI !== URI) {
+      if (this.cache[URI]) {
+        this.loadCache(this.cache[URI], options);
+      } else {
+        this.loadDocument(URI, options);
+      }
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handlePageScroll, false);
+
+    if (!this.props.cache) {
+      this.cache = null;
+    }
   }
 
   getPages = () => [...$$('.pdf-viewer-wrapper .page')];
 
-  loadDocument = (file, options = {}) => {
-    PDFJS.getDocument(file)
+  loadDocument = (URI, options = {}) => {
+    PDFJS.getDocument(URI)
       .then(pdfDocument => {
-        const PAGE_COUNT = pdfDocument.numPages;
-        this.setState({
-          pdfDocument,
-          pageCount: PAGE_COUNT,
-          currentPage: 1
-        });
-        window.pdfDocument = pdfDocument;
-        return { pdfDocument, options };
+        this.cache[URI] = pdfDocument;
+        this.handleLoadDocument(pdfDocument, options);
       })
-      .then(({ pdfDocument, options }) => this.renderPDF(pdfDocument, options))
       .catch(err => {
-        // PDF loading error
-        switch (err.name) {
-          case 'UnexpectedResponseException': // 请求失败
-            break;
-          case 'InvalidPDFException': // 非法pdf文件
-          default:
-        }
         console.log(err);
       });
   };
+  loadCache = (pdfDocument, options) => this.handleLoadDocument(pdfDocument, options)
+  handleLoadDocument = (pdfDocument, options = {}) => {
+    const PAGE_COUNT = pdfDocument.numPages;
+    this.setState({
+      pdfDocument,
+      pageCount: PAGE_COUNT,
+      currentPage: 1
+    });
+
+    this.renderPDF(pdfDocument, options)
+      .catch(err => {
+        console.log(err);
+      });
+  }
 
   renderPDF = (pdfDocument, options) => {
+    utils.removeChildren(this.container);
+
+    return this.makeRender(pdfDocument, options);
+  };
+  makeRender = (pdfDocument = this.state.pdfDocument, options, container = this.container) => {
     const { scale = INITIAL_SCALE } = options;
-
-    const container = this.container;
-    utils.removeChildren(container);
-
     const PAGE_COUNT = pdfDocument.numPages;
-
     const taskList = [];
 
     for (let page = 1; page <= PAGE_COUNT; page++) {
       pdfDocument.getPage(page).then(pdfPage => {
-        window[`pdfPage${page}`] = pdfPage;
         const scaledViewport = pdfPage.getViewport(INITIAL_SCALE);
         const renderScale = PREVIEW_BOX_WIDTH / scaledViewport.width;
 
@@ -131,7 +149,7 @@ class Viewer extends Component {
     }
 
     return Promise.all(taskList);
-  };
+  }
 
   // zoom in and and zoom out
   handleZoomIn = () => {
@@ -156,7 +174,7 @@ class Viewer extends Component {
       scale > INITIAL_SCALE
         ? INITIAL_SCALE
         : parseFloat(
-            (INITIAL_SCALE / PREVIEW_BOX_WIDTH * pdfUtils.deviceWidth(40)).toFixed(5)
+            ((INITIAL_SCALE / PREVIEW_BOX_WIDTH) * utils.deviceWidth(40)).toFixed(5)
           );
     if (finalScale > MAX_SCALE) finalScale = MAX_SCALE;
     this.handleZoom(finalScale, scale);
@@ -171,14 +189,14 @@ class Viewer extends Component {
       const oldWidth = this.container.clientWidth;
       const oldScrollLeft = this.viewerElem.scrollLeft;
 
-      this.renderPDF(pdfDocument, options).then(taskList => {
+      this.renderPDF(pdfDocument, options).then(() => {
         const width = this.container.clientWidth;
         this.resizeWrapper(width, oldWidth, oldScrollLeft);
       });
     }
   };
   resizeWrapper = (width, oldWidth, oldScrollLeft) => {
-    const deviceWidth = pdfUtils.deviceWidth(40);
+    const deviceWidth = utils.deviceWidth(40);
     const align = Math.floor((width - deviceWidth) / 2);
     const preAlign = Math.floor((oldWidth - deviceWidth) / 2);
     if (width > deviceWidth) {
@@ -208,15 +226,15 @@ class Viewer extends Component {
   };
 
   handleDownload = (e) => {
-    const { onDownload, file } = this.props;
+    const { onDownload, URI } = this.props;
     if (utils.isFunc(onDownload)) {
       e.preventDefault();
-      onDownload(file);
+      onDownload(URI);
     }
   }
 
   render() {
-    const { options: { tooltip }, file } = this.props;
+    const { options: { tooltip }, URI } = this.props;
     const { pageCount, currentPage, scale } = this.state;
     return (
       <div className="pdf-viewer-wrapper">
@@ -224,7 +242,7 @@ class Viewer extends Component {
         {tooltip &&
           pageCount > 0 &&
           <ToolBox
-            file={file}
+            URI={URI}
             scale={scale}
             pageCount={pageCount}
             currentPage={currentPage}
