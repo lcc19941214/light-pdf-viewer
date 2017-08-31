@@ -12,7 +12,7 @@ class PDFViewer extends Component {
 
   static defaultProps = {
     options: {
-      tooltip: true,
+      toolbox: true,
       toolbar: false,
       textLayer: true
     },

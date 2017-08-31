@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import ToolBox from './toolBox';
+import Toolbox from './toolbox';
 import utils from '../utils/utils';
 import {
   PREVIEW_BOX_WIDTH,
@@ -234,23 +234,22 @@ class Viewer extends Component {
   }
 
   render() {
-    const { options: { tooltip }, URI } = this.props;
+    const { options: { toolbox }, URI } = this.props;
     const { pageCount, currentPage, scale } = this.state;
     return (
       <div className="pdf-viewer-wrapper">
         <div className="pdfViewer pdf-viewer" />
-        {tooltip &&
-          pageCount > 0 &&
-          <ToolBox
-            URI={URI}
-            scale={scale}
-            pageCount={pageCount}
-            currentPage={currentPage}
-            handleZoomIn={this.handleZoomIn}
-            handleZoomOut={this.handleZoomOut}
-            handleZoomToggle={this.handleZoomToggle}
-            handleDownload={this.handleDownload}
-          />}
+        <Toolbox
+          URI={URI}
+          toolbox={toolbox}
+          scale={scale}
+          pageCount={pageCount}
+          currentPage={currentPage}
+          handleZoomIn={this.handleZoomIn}
+          handleZoomOut={this.handleZoomOut}
+          handleZoomToggle={this.handleZoomToggle}
+          handleDownload={this.handleDownload}
+        />
       </div>
     );
   }
