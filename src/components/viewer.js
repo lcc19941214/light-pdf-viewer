@@ -47,7 +47,7 @@ class Viewer extends Component {
 
     this.cache = this.props.cache || {};
     this.scrollTarget = utils.isElement(this.props.scrollTarget) ? this.props.scrollTarget : window;
-    this.handleZoom = utils.throttle(this.handleZoom, 400);
+    this.handleZoom = utils.throttle(this.handleZoom, 200);
     this.handlePageScroll = utils.throttle(this.handlePageScroll, 300);
   }
 

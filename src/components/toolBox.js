@@ -5,7 +5,7 @@ import { MIN_SCALE, MAX_SCALE, INITIAL_SCALE } from '../utils/utils';
 
 export default class ToolBox extends Component {
   static propTypes = {
-    file: PropTypes.string.isRequired,
+    URI: PropTypes.string.isRequired,
     scale: PropTypes.number.isRequired,
     pageCount: PropTypes.number.isRequired,
     currentPage: PropTypes.number.isRequired,
@@ -16,7 +16,7 @@ export default class ToolBox extends Component {
   };
 
   render() {
-    const { pageCount, currentPage, scale, file } = this.props;
+    const { pageCount, currentPage, scale, URI } = this.props;
     return (
       <div className="tooltip-wrapper">
         <div className="tooltip">
@@ -58,9 +58,9 @@ export default class ToolBox extends Component {
             <a
               className="action-btn"
               download
-              href={file}
+              href={URI}
               onClick={this.props.handleDownload}>
-              <div className="action-btn__icon download" href={file} download />
+              <div className="action-btn__icon download" href={URI} download />
             </a>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Viewer from './components/viewer';
-import ToolBar from './components/toolbar';
+import ToolBar from './components/toolBar';
 import '../assets/index.less';
 
 class PDFViewer extends Component {

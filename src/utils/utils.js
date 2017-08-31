@@ -66,7 +66,7 @@ const utils = {
       args = arguments;
 
       timer = setTimeout(function () {
-        fn.apply(context, arguments);
+        fn.apply(context, args);
       }, wait);
     }
 
@@ -80,9 +80,8 @@ const utils = {
       if (!timer) {
         context = this;
         args = arguments;
-
         timer = setTimeout(function () {
-          fn.apply(context, arguments);
+          fn.apply(context, args);
           timer = null;
         }, wait);
       }
