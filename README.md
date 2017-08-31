@@ -24,4 +24,4 @@ ReactDOM.render(
 
 ```
 
-[Online demo](https://github.com/lcc19941214/light-pdf-viewer.github.io)
+[Online demo](http://achuan.me/light-pdf-viewer.github.io/)
